@@ -1,0 +1,79 @@
+SLIP 15 - Q.1
+Question: Create a Spring application to demonstrate constructor injection using a Book and Author class.
+
+Files needed: pom.xml (add these dependencies), Author.java, Book.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Author.java  ====================
+package com.example;
+
+public class Author {
+    private String name;
+
+    // Constructor Injection
+    public Author(String name) {
+        this.name = name;
+    }
+
+    public String toString() {
+        return name;
+    }
+}
+
+====================  Book.java  ====================
+package com.example;
+
+public class Book {
+    private String title;
+    private Author author;
+
+    // Constructor Injection (String + object reference)
+    public Book(String title, Author author) {
+        this.title = title;
+        this.author = author;
+    }
+
+    public void display() {
+        System.out.println("Book Title : " + title);
+        System.out.println("Author     : " + author);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="author" class="com.example.Author">
+        <constructor-arg value="James Gosling"/>
+    </bean>
+
+    <bean id="book" class="com.example.Book">
+        <constructor-arg value="Java Programming"/>
+        <constructor-arg ref="author"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Book b = ctx.getBean("book", Book.class);
+        b.display();
+    }
+}

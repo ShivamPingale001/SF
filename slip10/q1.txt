@@ -1,0 +1,64 @@
+SLIP 10 - Q.1
+Question: Develop a Spring application to demonstrate bean aliasing. Configure multiple aliases for a Course bean and retrieve it using different names.
+
+Files needed: pom.xml (add these dependencies), Course.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Course.java  ====================
+package com.example;
+
+public class Course {
+    private String courseName;
+
+    public void setCourseName(String courseName) { this.courseName = courseName; }
+
+    public void display() {
+        System.out.println("Course Name: " + courseName);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- One bean with extra names given in the 'name' attribute -->
+    <bean id="course" name="c1,c2" class="com.example.Course">
+        <property name="courseName" value="M.Sc Computer Science"/>
+    </bean>
+
+    <!-- Another alias using the <alias> tag -->
+    <alias name="course" alias="myCourse"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        // The SAME bean can be retrieved using any of its names/aliases
+        Course a = ctx.getBean("course", Course.class);
+        Course b = ctx.getBean("c1", Course.class);
+        Course c = ctx.getBean("myCourse", Course.class);
+
+        a.display();
+        b.display();
+        c.display();
+
+        System.out.println("All are same object? " + (a == b && b == c));
+    }
+}

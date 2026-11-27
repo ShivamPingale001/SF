@@ -1,0 +1,65 @@
+SLIP 12 - Q.1
+Question: Develop a Spring application to demonstrate constructor ambiguity resolution using constructor-arg index and type attributes.
+
+Files needed: pom.xml (add these dependencies), Addition.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Addition.java  ====================
+package com.example;
+
+public class Addition {
+
+    // Constructor 1 : two int arguments
+    public Addition(int a, int b) {
+        System.out.println("int constructor called. Sum = " + (a + b));
+    }
+
+    // Constructor 2 : two String arguments
+    // Without index/type, Spring gets confused between these two constructors
+    public Addition(String a, String b) {
+        System.out.println("String constructor called. Result = " + a + b);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- Resolved using TYPE attribute : selects the (int, int) constructor -->
+    <bean id="add1" class="com.example.Addition">
+        <constructor-arg index="0" type="int" value="10"/>
+        <constructor-arg index="1" type="int" value="20"/>
+    </bean>
+
+    <!-- Resolved using INDEX + TYPE attributes : selects the (String, String) constructor -->
+    <bean id="add2" class="com.example.Addition">
+        <constructor-arg index="0" type="java.lang.String" value="Hello"/>
+        <constructor-arg index="1" type="java.lang.String" value="Spring"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        // The constructors run when the beans are created
+        Addition a1 = ctx.getBean("add1", Addition.class);
+        Addition a2 = ctx.getBean("add2", Addition.class);
+    }
+}

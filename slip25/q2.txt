@@ -1,0 +1,103 @@
+SLIP 25 - Q.2
+Question: Develop a Spring annotation-based application using @Component, @Service, @Repository and @Autowired to display Student details.
+
+Files needed: pom.xml (add these dependencies), Student.java, StudentRepository.java, StudentService.java, StudentController.java, AppConfig.java, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    private int id;
+    private String name;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String toString() {
+        return "Student [id=" + id + ", name=" + name + "]";
+    }
+}
+
+====================  StudentRepository.java  ====================
+package com.example;
+
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class StudentRepository {
+    public Student getStudent() {
+        // In a real project this data comes from the database
+        return new Student(101, "Prajs");
+    }
+}
+
+====================  StudentService.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StudentService {
+
+    @Autowired
+    private StudentRepository repository;
+
+    public Student getStudentDetails() {
+        return repository.getStudent();
+    }
+}
+
+====================  StudentController.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class StudentController {
+
+    @Autowired
+    private StudentService service;
+
+    public void displayStudent() {
+        System.out.println(service.getStudentDetails());
+    }
+}
+
+====================  AppConfig.java  ====================
+package com.example;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.example")
+public class AppConfig {
+}
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        StudentController controller = ctx.getBean(StudentController.class);
+        controller.displayStudent();
+    }
+}

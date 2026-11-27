@@ -1,0 +1,113 @@
+SLIP 13 - Q.2
+Question: Develop a Spring Core application for a College Management System. Create Student, Department and Course classes. Demonstrate constructor injection, setter injection and inner bean configuration using XML.
+
+Files needed: pom.xml (add these dependencies), Course.java, Department.java, Student.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Course.java  ====================
+package com.example;
+
+public class Course {
+    private String courseName;
+    private int duration;   // in years
+
+    // Constructor Injection
+    public Course(String courseName, int duration) {
+        this.courseName = courseName;
+        this.duration = duration;
+    }
+
+    public void display() {
+        System.out.println("Course: " + courseName + " (" + duration + " years)");
+    }
+}
+
+====================  Department.java  ====================
+package com.example;
+
+public class Department {
+    private String deptName;
+
+    // Setter Injection
+    public void setDeptName(String deptName) { this.deptName = deptName; }
+
+    public void display() {
+        System.out.println("Department: " + deptName);
+    }
+}
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    private int id;
+    private String name;
+    private Course course;           // injected by ref (setter)
+    private Department department;   // injected as INNER BEAN (setter)
+
+    // Constructor Injection
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public void setCourse(Course course) { this.course = course; }
+    public void setDepartment(Department department) { this.department = department; }
+
+    public void display() {
+        System.out.println("Student Id: " + id + ", Name: " + name);
+        course.display();
+        department.display();
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- Course bean : constructor injection -->
+    <bean id="course" class="com.example.Course">
+        <constructor-arg value="M.Sc Computer Science"/>
+        <constructor-arg value="2"/>
+    </bean>
+
+    <!-- Student bean : constructor + setter + inner bean -->
+    <bean id="student" class="com.example.Student">
+        <constructor-arg value="101"/>
+        <constructor-arg value="Prajs"/>
+
+        <property name="course" ref="course"/>
+
+        <!-- INNER BEAN : Department defined inside Student -->
+        <property name="department">
+            <bean class="com.example.Department">
+                <property name="deptName" value="Computer Science"/>
+            </bean>
+        </property>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Student s = ctx.getBean("student", Student.class);
+        s.display();
+    }
+}

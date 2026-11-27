@@ -1,0 +1,60 @@
+SLIP 20 - Q.2
+Question: Create a Spring application demonstrating bean lifecycle using init-method and destroy-method.
+
+Files needed: pom.xml (add these dependencies), MyBean.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  MyBean.java  ====================
+package com.example;
+
+public class MyBean {
+
+    // init-method : called automatically after the bean is created
+    public void init() {
+        System.out.println("Init method called : Bean is ready");
+    }
+
+    // destroy-method : called automatically when the context is closed
+    public void destroy() {
+        System.out.println("Destroy method called : Bean is removed");
+    }
+
+    public void display() {
+        System.out.println("MyBean display() method called");
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="myBean" class="com.example.MyBean"
+          init-method="init" destroy-method="destroy"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext("beans.xml");
+        MyBean bean = ctx.getBean("myBean", MyBean.class);
+        bean.display();
+
+        ctx.close();   // triggers the destroy-method
+    }
+}

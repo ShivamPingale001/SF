@@ -1,0 +1,60 @@
+SLIP 1 - Q.1
+Question: Create a Spring Maven project and demonstrate Dependency Injection using XML-based configuration. Create a Student class and inject its properties using setter injection.
+
+Files needed: pom.xml (add these dependencies), Student.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    private int id;
+    private String name;
+    private String city;
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setCity(String city) { this.city = city; }
+
+    public void display() {
+        System.out.println("Student Id   : " + id);
+        System.out.println("Student Name : " + name);
+        System.out.println("Student City : " + city);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="student" class="com.example.Student">
+        <property name="id" value="101"/>
+        <property name="name" value="Prajs"/>
+        <property name="city" value="Pune"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Student s = ctx.getBean("student", Student.class);
+        s.display();
+    }
+}

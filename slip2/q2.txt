@@ -1,0 +1,125 @@
+SLIP 2 - Q.2
+Question: Develop a BankService application using Spring AOP. Implement Before, After, Around and AfterThrowing advice to perform logging during deposit and withdraw operations.
+
+Files needed: pom.xml (add these dependencies), BankService.java, LoggingAspect.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring AOP + AspectJ -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.7</version>
+    </dependency>
+</dependencies>
+
+====================  BankService.java  ====================
+package com.example;
+
+public class BankService {
+    private int balance = 1000;
+
+    public void deposit(int amount) {
+        balance = balance + amount;
+        System.out.println("Deposited: " + amount + " | Balance: " + balance);
+    }
+
+    public void withdraw(int amount) {
+        if (amount > balance) {
+            throw new RuntimeException("Insufficient Balance");
+        }
+        balance = balance - amount;
+        System.out.println("Withdrawn: " + amount + " | Balance: " + balance);
+    }
+}
+
+====================  LoggingAspect.java  ====================
+package com.example;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class LoggingAspect {
+
+    // Runs BEFORE the method
+    @Before("execution(* com.example.BankService.*(..))")
+    public void logBefore(JoinPoint jp) {
+        System.out.println("[LOG BEFORE] Calling method: " + jp.getSignature().getName());
+    }
+
+    // Runs AFTER the method (always)
+    @After("execution(* com.example.BankService.*(..))")
+    public void logAfter(JoinPoint jp) {
+        System.out.println("[LOG AFTER] Finished method: " + jp.getSignature().getName());
+    }
+
+    // Runs AROUND the method (before + after, controls execution)
+    @Around("execution(* com.example.BankService.*(..))")
+    public Object logAround(ProceedingJoinPoint pjp) throws Throwable {
+        System.out.println("[LOG AROUND] Before method: " + pjp.getSignature().getName());
+        Object result = pjp.proceed();
+        System.out.println("[LOG AROUND] After method: " + pjp.getSignature().getName());
+        return result;
+    }
+
+    // Runs only when the method THROWS an exception
+    @AfterThrowing(pointcut = "execution(* com.example.BankService.*(..))", throwing = "ex")
+    public void logAfterThrowing(JoinPoint jp, Throwable ex) {
+        System.out.println("[LOG ERROR] Exception in " + jp.getSignature().getName()
+                + " : " + ex.getMessage());
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <bean id="bankService" class="com.example.BankService"/>
+    <bean id="loggingAspect" class="com.example.LoggingAspect"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        BankService bank = ctx.getBean("bankService", BankService.class);
+
+        bank.deposit(500);
+        bank.withdraw(200);
+
+        try {
+            bank.withdraw(5000);   // throws exception -> AfterThrowing advice runs
+        } catch (Exception e) {
+            System.out.println("Exception handled in main: " + e.getMessage());
+        }
+    }
+}

@@ -1,0 +1,114 @@
+SLIP 9 - Q.2
+Question: Develop a Spring AOP application for an Employee Management System. Implement logging using Before, AfterReturning and AfterThrowing advice for employee operations.
+
+Files needed: pom.xml (add these dependencies), EmployeeService.java, LoggingAspect.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring AOP + AspectJ -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.7</version>
+    </dependency>
+</dependencies>
+
+====================  EmployeeService.java  ====================
+package com.example;
+
+public class EmployeeService {
+
+    public void addEmployee(String name) {
+        System.out.println("Employee added: " + name);
+    }
+
+    public double getSalary(int id) {
+        if (id <= 0) {
+            throw new RuntimeException("Invalid Employee Id: " + id);
+        }
+        return 50000.0;
+    }
+}
+
+====================  LoggingAspect.java  ====================
+package com.example;
+
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class LoggingAspect {
+
+    // Runs BEFORE every employee operation
+    @Before("execution(* com.example.EmployeeService.*(..))")
+    public void logBefore(JoinPoint jp) {
+        System.out.println("[LOG BEFORE] Method: " + jp.getSignature().getName());
+    }
+
+    // Runs AFTER a method returns SUCCESSFULLY - also receives the return value
+    @AfterReturning(pointcut = "execution(* com.example.EmployeeService.*(..))",
+                    returning = "result")
+    public void logAfterReturning(JoinPoint jp, Object result) {
+        System.out.println("[LOG AFTER RETURNING] Method: "
+                + jp.getSignature().getName() + " returned: " + result);
+    }
+
+    // Runs only when a method THROWS an exception
+    @AfterThrowing(pointcut = "execution(* com.example.EmployeeService.*(..))",
+                   throwing = "ex")
+    public void logAfterThrowing(JoinPoint jp, Throwable ex) {
+        System.out.println("[LOG ERROR] Exception in "
+                + jp.getSignature().getName() + " : " + ex.getMessage());
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <bean id="employeeService" class="com.example.EmployeeService"/>
+    <bean id="loggingAspect" class="com.example.LoggingAspect"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        EmployeeService service = ctx.getBean("employeeService", EmployeeService.class);
+
+        service.addEmployee("Prajs");
+        System.out.println("Salary: " + service.getSalary(1));
+
+        try {
+            service.getSalary(0);   // throws exception -> AfterThrowing advice runs
+        } catch (Exception e) {
+            System.out.println("Exception handled in main: " + e.getMessage());
+        }
+    }
+}

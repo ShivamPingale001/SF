@@ -1,0 +1,95 @@
+SLIP 8 - Q.2
+Question: Develop a Spring Core application for a Student Management System. Use XML configuration to demonstrate setter injection, constructor injection and collection-based Dependency Injection using List and Map.
+
+Files needed: pom.xml (add these dependencies), Student.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+import java.util.List;
+import java.util.Map;
+
+public class Student {
+    private int id;
+    private String name;
+    private String city;
+    private List<String> subjects;
+    private Map<String, Integer> marks;
+
+    // Constructor Injection (id, name)
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    // Setter Injection
+    public void setCity(String city) { this.city = city; }
+    public void setSubjects(List<String> subjects) { this.subjects = subjects; }
+    public void setMarks(Map<String, Integer> marks) { this.marks = marks; }
+
+    public void display() {
+        System.out.println("Id       : " + id);
+        System.out.println("Name     : " + name);
+        System.out.println("City     : " + city);
+        System.out.println("Subjects : " + subjects);
+        System.out.println("Marks    : " + marks);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="student" class="com.example.Student">
+        <!-- Constructor Injection -->
+        <constructor-arg value="101"/>
+        <constructor-arg value="Prajs"/>
+
+        <!-- Setter Injection -->
+        <property name="city" value="Pune"/>
+
+        <!-- Collection Injection : List -->
+        <property name="subjects">
+            <list>
+                <value>Java</value>
+                <value>Python</value>
+                <value>Machine Learning</value>
+            </list>
+        </property>
+
+        <!-- Collection Injection : Map -->
+        <property name="marks">
+            <map>
+                <entry key="Java" value="85"/>
+                <entry key="Python" value="90"/>
+                <entry key="Machine Learning" value="88"/>
+            </map>
+        </property>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Student s = ctx.getBean("student", Student.class);
+        s.display();
+    }
+}

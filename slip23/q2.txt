@@ -1,0 +1,99 @@
+SLIP 23 - Q.2
+Question: Develop a Spring AOP application to implement Before, After and Around advice for a simple Calculator class.
+
+Files needed: pom.xml (add these dependencies), Calculator.java, LoggingAspect.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring AOP + AspectJ -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.7</version>
+    </dependency>
+</dependencies>
+
+====================  Calculator.java  ====================
+package com.example;
+
+public class Calculator {
+    public int add(int a, int b) {
+        System.out.println("Inside add() method");
+        return a + b;
+    }
+}
+
+====================  LoggingAspect.java  ====================
+package com.example;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class LoggingAspect {
+
+    // BEFORE advice
+    @Before("execution(* com.example.Calculator.*(..))")
+    public void logBefore() {
+        System.out.println("[LOG BEFORE] Calculator method is about to execute");
+    }
+
+    // AFTER advice
+    @After("execution(* com.example.Calculator.*(..))")
+    public void logAfter() {
+        System.out.println("[LOG AFTER] Calculator method executed");
+    }
+
+    // AROUND advice - runs before and after, and controls the method call
+    @Around("execution(* com.example.Calculator.*(..))")
+    public Object logAround(ProceedingJoinPoint pjp) throws Throwable {
+        System.out.println("[LOG AROUND] Before method call");
+        Object result = pjp.proceed();   // actually calls the add() method
+        System.out.println("[LOG AROUND] After method call, result = " + result);
+        return result;
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <bean id="calculator" class="com.example.Calculator"/>
+    <bean id="loggingAspect" class="com.example.LoggingAspect"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Calculator calc = ctx.getBean("calculator", Calculator.class);
+        int result = calc.add(10, 20);
+        System.out.println("Final Result: " + result);
+    }
+}

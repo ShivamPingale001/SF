@@ -1,0 +1,82 @@
+SLIP 27 - Q.2
+Question: Develop a Spring application to manage Employee details using List and Map collection injection.
+
+Files needed: pom.xml (add these dependencies), Employee.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Employee.java  ====================
+package com.example;
+
+import java.util.List;
+import java.util.Map;
+
+public class Employee {
+    private int id;
+    private String name;
+    private List<String> skills;              // List injection
+    private Map<String, String> projects;     // Map injection (project -> technology)
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setSkills(List<String> skills) { this.skills = skills; }
+    public void setProjects(Map<String, String> projects) { this.projects = projects; }
+
+    public void display() {
+        System.out.println("Employee Id   : " + id);
+        System.out.println("Employee Name : " + name);
+        System.out.println("Skills (List) : " + skills);
+        System.out.println("Projects (Map): " + projects);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="emp" class="com.example.Employee">
+        <property name="id" value="1"/>
+        <property name="name" value="Prajs"/>
+
+        <!-- List Injection -->
+        <property name="skills">
+            <list>
+                <value>Java</value>
+                <value>Spring</value>
+                <value>MySQL</value>
+            </list>
+        </property>
+
+        <!-- Map Injection -->
+        <property name="projects">
+            <map>
+                <entry key="BankApp" value="Spring JDBC"/>
+                <entry key="ShopApp" value="Spring AOP"/>
+            </map>
+        </property>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Employee e = ctx.getBean("emp", Employee.class);
+        e.display();
+    }
+}

@@ -1,0 +1,90 @@
+SLIP 18 - Q.2
+Question: Create a Spring application with a Payment interface and two implementations: CashPayment and OnlinePayment. Use @Qualifier to inject the required implementation.
+
+Files needed: pom.xml (add these dependencies), Payment.java, CashPayment.java, OnlinePayment.java, PaymentService.java, AppConfig.java, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Payment.java  ====================
+package com.example;
+
+public interface Payment {
+    void pay(double amount);
+}
+
+====================  CashPayment.java  ====================
+package com.example;
+
+import org.springframework.stereotype.Component;
+
+@Component("cashPayment")
+public class CashPayment implements Payment {
+    public void pay(double amount) {
+        System.out.println("Paid Rs." + amount + " using CASH");
+    }
+}
+
+====================  OnlinePayment.java  ====================
+package com.example;
+
+import org.springframework.stereotype.Component;
+
+@Component("onlinePayment")
+public class OnlinePayment implements Payment {
+    public void pay(double amount) {
+        System.out.println("Paid Rs." + amount + " using ONLINE PAYMENT");
+    }
+}
+
+====================  PaymentService.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+@Service
+public class PaymentService {
+
+    // @Qualifier selects WHICH Payment bean to inject
+    @Autowired
+    @Qualifier("onlinePayment")
+    private Payment payment;
+
+    public void makePayment(double amount) {
+        payment.pay(amount);
+    }
+}
+
+====================  AppConfig.java  ====================
+package com.example;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.example")
+public class AppConfig {
+}
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        PaymentService service = ctx.getBean(PaymentService.class);
+        service.makePayment(1500);
+    }
+}

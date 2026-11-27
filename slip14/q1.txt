@@ -1,0 +1,60 @@
+SLIP 14 - Q.1
+Question: Create a Spring application to display Employee details using setter injection.
+
+Files needed: pom.xml (add these dependencies), Employee.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Employee.java  ====================
+package com.example;
+
+public class Employee {
+    private int id;
+    private String name;
+    private double salary;
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setSalary(double salary) { this.salary = salary; }
+
+    public void display() {
+        System.out.println("Employee Id     : " + id);
+        System.out.println("Employee Name   : " + name);
+        System.out.println("Employee Salary : " + salary);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="emp" class="com.example.Employee">
+        <property name="id" value="1"/>
+        <property name="name" value="Prajs"/>
+        <property name="salary" value="50000"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Employee e = ctx.getBean("emp", Employee.class);
+        e.display();
+    }
+}

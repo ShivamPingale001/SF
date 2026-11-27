@@ -1,0 +1,82 @@
+SLIP 25 - Q.1
+Question: Create a Spring application using @Component and @Autowired annotations to display Student information.
+
+Files needed: pom.xml (add these dependencies), Student.java, College.java, AppConfig.java, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class Student {
+
+    @Value("101")
+    private int id;
+
+    @Value("Prajs")
+    private String name;
+
+    @Value("Pune")
+    private String city;
+
+    public void display() {
+        System.out.println("Student Id   : " + id);
+        System.out.println("Student Name : " + name);
+        System.out.println("Student City : " + city);
+    }
+}
+
+====================  College.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class College {
+
+    // Spring injects the Student bean automatically
+    @Autowired
+    private Student student;
+
+    public void showStudentInfo() {
+        student.display();
+    }
+}
+
+====================  AppConfig.java  ====================
+package com.example;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.example")
+public class AppConfig {
+}
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        College college = ctx.getBean(College.class);
+        college.showStudentInfo();
+    }
+}

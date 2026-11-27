@@ -1,0 +1,131 @@
+SLIP 3 - Q.2
+Question: Develop an application using Spring Annotations. Create StudentRepository, StudentService and StudentController classes using stereotype annotations. Demonstrate @Autowired, @Qualifier and @Resource.
+
+Files needed: pom.xml (add these dependencies), Student.java, StudentRepository.java, MemoryStudentRepository.java, JdbcStudentRepository.java, StudentService.java, StudentController.java, AppConfig.java, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Needed for @Resource annotation -->
+    <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>1.3.2</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    private int id;
+    private String name;
+
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public String toString() {
+        return "Student [id=" + id + ", name=" + name + "]";
+    }
+}
+
+====================  StudentRepository.java  ====================
+package com.example;
+
+public interface StudentRepository {
+    Student getStudent();
+}
+
+====================  MemoryStudentRepository.java  ====================
+package com.example;
+
+import org.springframework.stereotype.Repository;
+
+@Repository("memoryRepo")
+public class MemoryStudentRepository implements StudentRepository {
+    public Student getStudent() {
+        return new Student(1, "Prajs (from Memory Repository)");
+    }
+}
+
+====================  JdbcStudentRepository.java  ====================
+package com.example;
+
+import org.springframework.stereotype.Repository;
+
+@Repository("jdbcRepo")
+public class JdbcStudentRepository implements StudentRepository {
+    public Student getStudent() {
+        return new Student(2, "Amit (from JDBC Repository)");
+    }
+}
+
+====================  StudentService.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+
+@Service("studentService")
+public class StudentService {
+
+    // @Autowired + @Qualifier : injects the bean named "memoryRepo"
+    @Autowired
+    @Qualifier("memoryRepo")
+    private StudentRepository repository;
+
+    public void showStudent() {
+        System.out.println(repository.getStudent());
+    }
+}
+
+====================  StudentController.java  ====================
+package com.example;
+
+import javax.annotation.Resource;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class StudentController {
+
+    // @Resource : injects the bean by NAME "studentService"
+    @Resource(name = "studentService")
+    private StudentService service;
+
+    public void display() {
+        service.showStudent();
+    }
+}
+
+====================  AppConfig.java  ====================
+package com.example;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.example")
+public class AppConfig {
+}
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        StudentController controller = ctx.getBean(StudentController.class);
+        controller.display();
+    }
+}

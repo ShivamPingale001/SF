@@ -1,0 +1,79 @@
+SLIP 21 - Q.1
+Question: Write a Spring AOP program to display a message after executing the display() method.
+
+Files needed: pom.xml (add these dependencies), Student.java, MyAspect.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring AOP + AspectJ -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.7</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    public void display() {
+        System.out.println("Student display() method is executed");
+    }
+}
+
+====================  MyAspect.java  ====================
+package com.example;
+
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+
+@Aspect
+public class MyAspect {
+
+    // This advice runs AFTER the display() method
+    @After("execution(* com.example.Student.display())")
+    public void afterDisplay() {
+        System.out.println("Message AFTER display() : Method execution finished.");
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <bean id="student" class="com.example.Student"/>
+    <bean id="myAspect" class="com.example.MyAspect"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Student s = ctx.getBean("student", Student.class);
+        s.display();
+    }
+}

@@ -1,0 +1,89 @@
+SLIP 4 - Q.2
+Question: Develop a Spring application demonstrating bean lifecycle management. Implement BeanNameAware, init-method, destroy-method and static factory method configuration.
+
+Files needed: pom.xml (add these dependencies), MyBean.java, BeanFactory.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  MyBean.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.BeanNameAware;
+
+public class MyBean implements BeanNameAware {
+    private String beanName;
+
+    // BeanNameAware method - Spring passes the bean id automatically
+    public void setBeanName(String name) {
+        this.beanName = name;
+        System.out.println("BeanNameAware: Bean name is " + name);
+    }
+
+    // init-method - runs after the bean is created
+    public void init() {
+        System.out.println("Init method called for bean: " + beanName);
+    }
+
+    // destroy-method - runs when the context is closed
+    public void destroy() {
+        System.out.println("Destroy method called for bean: " + beanName);
+    }
+
+    public void display() {
+        System.out.println("MyBean display() called. Bean name: " + beanName);
+    }
+}
+
+====================  BeanFactory.java  ====================
+package com.example;
+
+public class BeanFactory {
+    // Static factory method - Spring creates the bean by calling this method
+    public static MyBean createBean() {
+        System.out.println("Static factory method called");
+        return new MyBean();
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- Normal bean with init-method and destroy-method -->
+    <bean id="myBean" class="com.example.MyBean"
+          init-method="init" destroy-method="destroy"/>
+
+    <!-- Bean created using a STATIC FACTORY method -->
+    <bean id="factoryBean" class="com.example.BeanFactory"
+          factory-method="createBean"
+          init-method="init" destroy-method="destroy"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ClassPathXmlApplicationContext ctx =
+                new ClassPathXmlApplicationContext("beans.xml");
+        MyBean b1 = ctx.getBean("myBean", MyBean.class);
+        b1.display();
+
+        MyBean b2 = ctx.getBean("factoryBean", MyBean.class);
+        b2.display();
+
+        ctx.close();   // triggers destroy-method
+    }
+}

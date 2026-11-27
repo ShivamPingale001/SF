@@ -1,0 +1,75 @@
+SLIP 5 - Q.1
+Question: Create a Spring application demonstrating P-Namespace and C-Namespace configurations for dependency injection.
+
+Files needed: pom.xml (add these dependencies), Student.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+public class Student {
+    private int id;
+    private String name;
+    private String city;
+
+    public Student() { }
+
+    // Used by C-Namespace (constructor injection)
+    public Student(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setCity(String city) { this.city = city; }
+
+    public void display() {
+        System.out.println("Id: " + id + ", Name: " + name + ", City: " + city);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:c="http://www.springframework.org/schema/c"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- P-Namespace : shortcut for setter injection (p:propertyName="value") -->
+    <bean id="s1" class="com.example.Student"
+          p:id="1" p:name="Prajs" p:city="Pune"/>
+
+    <!-- C-Namespace : shortcut for constructor injection (c:_index="value") -->
+    <bean id="s2" class="com.example.Student"
+          c:_0="2" c:_1="Amit" p:city="Mumbai"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Student s1 = ctx.getBean("s1", Student.class);
+        Student s2 = ctx.getBean("s2", Student.class);
+
+        System.out.println("--- Using P-Namespace ---");
+        s1.display();
+        System.out.println("--- Using C-Namespace ---");
+        s2.display();
+    }
+}

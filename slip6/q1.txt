@@ -1,0 +1,77 @@
+SLIP 6 - Q.1
+Question: Create a Spring application using @Component, @Service and @Autowired annotations to inject a Student object into StudentService.
+
+Files needed: pom.xml (add these dependencies), Student.java, StudentService.java, AppConfig.java, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Student.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class Student {
+
+    @Value("101")
+    private int id;
+
+    @Value("Prajs")
+    private String name;
+
+    public void display() {
+        System.out.println("Student Id: " + id + ", Name: " + name);
+    }
+}
+
+====================  StudentService.java  ====================
+package com.example;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StudentService {
+
+    // Spring automatically injects the Student bean here
+    @Autowired
+    private Student student;
+
+    public void showStudent() {
+        student.display();
+    }
+}
+
+====================  AppConfig.java  ====================
+package com.example;
+
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@ComponentScan("com.example")
+public class AppConfig {
+}
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+        StudentService service = ctx.getBean(StudentService.class);
+        service.showStudent();
+    }
+}

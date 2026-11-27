@@ -1,0 +1,81 @@
+SLIP 9 - Q.1
+Question: Create a Spring application to demonstrate dependency injection between Employee and Department classes using XML configuration.
+
+Files needed: pom.xml (add these dependencies), Department.java, Employee.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Department.java  ====================
+package com.example;
+
+public class Department {
+    private String deptName;
+    private String location;
+
+    public void setDeptName(String deptName) { this.deptName = deptName; }
+    public void setLocation(String location) { this.location = location; }
+
+    public void display() {
+        System.out.println("Department : " + deptName + ", Location: " + location);
+    }
+}
+
+====================  Employee.java  ====================
+package com.example;
+
+public class Employee {
+    private int id;
+    private String name;
+    private Department dept;   // Department object injected by Spring
+
+    public void setId(int id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setDept(Department dept) { this.dept = dept; }
+
+    public void display() {
+        System.out.println("Employee Id   : " + id);
+        System.out.println("Employee Name : " + name);
+        dept.display();
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="dept" class="com.example.Department">
+        <property name="deptName" value="Computer Science"/>
+        <property name="location" value="Pune"/>
+    </bean>
+
+    <!-- Department bean is injected into Employee using ref -->
+    <bean id="emp" class="com.example.Employee">
+        <property name="id" value="1"/>
+        <property name="name" value="Prajs"/>
+        <property name="dept" ref="dept"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Employee e = ctx.getBean("emp", Employee.class);
+        e.display();
+    }
+}

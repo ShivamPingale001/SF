@@ -1,0 +1,89 @@
+SLIP 8 - Q.1
+Question: Implement Before and After advice using Spring AOP for the deposit() method of BankService.
+
+Files needed: pom.xml (add these dependencies), BankService.java, LoggingAspect.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring AOP + AspectJ -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aop</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.7</version>
+    </dependency>
+</dependencies>
+
+====================  BankService.java  ====================
+package com.example;
+
+public class BankService {
+    private int balance = 1000;
+
+    public void deposit(int amount) {
+        balance = balance + amount;
+        System.out.println("Deposited: " + amount + " | Balance: " + balance);
+    }
+}
+
+====================  LoggingAspect.java  ====================
+package com.example;
+
+import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
+
+@Aspect
+public class LoggingAspect {
+
+    // Runs BEFORE deposit()
+    @Before("execution(* com.example.BankService.deposit(..))")
+    public void logBefore() {
+        System.out.println("[LOG] Before deposit() method...");
+    }
+
+    // Runs AFTER deposit()
+    @After("execution(* com.example.BankService.deposit(..))")
+    public void logAfter() {
+        System.out.println("[LOG] After deposit() method...");
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       https://www.springframework.org/schema/aop/spring-aop.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <bean id="bankService" class="com.example.BankService"/>
+    <bean id="loggingAspect" class="com.example.LoggingAspect"/>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        BankService bank = ctx.getBean("bankService", BankService.class);
+        bank.deposit(500);
+    }
+}

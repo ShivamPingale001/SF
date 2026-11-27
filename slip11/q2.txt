@@ -1,0 +1,125 @@
+SLIP 11 - Q.2
+Question: Develop a Spring application for an Online Shopping Cart. Configure Product and Cart beans using collection-based Dependency Injection. Use List, Set and Map to store product details.
+
+Files needed: pom.xml (add these dependencies), Product.java, Cart.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Product.java  ====================
+package com.example;
+
+public class Product {
+    private int id;
+    private String name;
+    private double price;
+
+    public Product(int id, String name, double price) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+    }
+
+    public String toString() {
+        return "Product [id=" + id + ", name=" + name + ", price=" + price + "]";
+    }
+}
+
+====================  Cart.java  ====================
+package com.example;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class Cart {
+    private List<Product> products;          // List of products
+    private Set<String> paymentModes;        // Set of payment modes (no duplicates)
+    private Map<String, Integer> quantity;   // Map : product name -> quantity
+
+    public void setProducts(List<Product> products) { this.products = products; }
+    public void setPaymentModes(Set<String> paymentModes) { this.paymentModes = paymentModes; }
+    public void setQuantity(Map<String, Integer> quantity) { this.quantity = quantity; }
+
+    public void display() {
+        System.out.println("Products in Cart (List):");
+        for (Product p : products) {
+            System.out.println("  " + p);
+        }
+        System.out.println("Payment Modes (Set): " + paymentModes);
+        System.out.println("Quantity (Map)     : " + quantity);
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="p1" class="com.example.Product">
+        <constructor-arg value="1"/>
+        <constructor-arg value="Laptop"/>
+        <constructor-arg value="55000"/>
+    </bean>
+    <bean id="p2" class="com.example.Product">
+        <constructor-arg value="2"/>
+        <constructor-arg value="Mouse"/>
+        <constructor-arg value="800"/>
+    </bean>
+    <bean id="p3" class="com.example.Product">
+        <constructor-arg value="3"/>
+        <constructor-arg value="Keyboard"/>
+        <constructor-arg value="1500"/>
+    </bean>
+
+    <bean id="cart" class="com.example.Cart">
+        <!-- List Injection -->
+        <property name="products">
+            <list>
+                <ref bean="p1"/>
+                <ref bean="p2"/>
+                <ref bean="p3"/>
+            </list>
+        </property>
+
+        <!-- Set Injection -->
+        <property name="paymentModes">
+            <set>
+                <value>Cash</value>
+                <value>UPI</value>
+                <value>Card</value>
+            </set>
+        </property>
+
+        <!-- Map Injection -->
+        <property name="quantity">
+            <map>
+                <entry key="Laptop" value="1"/>
+                <entry key="Mouse" value="2"/>
+                <entry key="Keyboard" value="1"/>
+            </map>
+        </property>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Cart cart = ctx.getBean("cart", Cart.class);
+        cart.display();
+    }
+}

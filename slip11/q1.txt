@@ -1,0 +1,78 @@
+SLIP 11 - Q.1
+Question: Create a Spring application using inner beans. Define an Engine bean inside a Car bean and display the car and engine details.
+
+Files needed: pom.xml (add these dependencies), Engine.java, Car.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Engine.java  ====================
+package com.example;
+
+public class Engine {
+    private String type;
+    private int power;
+
+    public void setType(String type) { this.type = type; }
+    public void setPower(int power) { this.power = power; }
+
+    public void display() {
+        System.out.println("Engine Type: " + type + ", Power: " + power + " HP");
+    }
+}
+
+====================  Car.java  ====================
+package com.example;
+
+public class Car {
+    private String name;
+    private Engine engine;
+
+    public void setName(String name) { this.name = name; }
+    public void setEngine(Engine engine) { this.engine = engine; }
+
+    public void display() {
+        System.out.println("Car Name: " + name);
+        engine.display();
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="car" class="com.example.Car">
+        <property name="name" value="Hyundai i20"/>
+        <!-- INNER BEAN : Engine bean is defined INSIDE the Car bean.
+             It has no id and cannot be used outside the Car bean. -->
+        <property name="engine">
+            <bean class="com.example.Engine">
+                <property name="type" value="Petrol"/>
+                <property name="power" value="120"/>
+            </bean>
+        </property>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        Car car = ctx.getBean("car", Car.class);
+        car.display();
+    }
+}

@@ -1,0 +1,176 @@
+SLIP 16 - Q.2
+Question: Develop an Employee Management application using Spring JDBC to perform insert, update, delete and display operations.
+
+Files needed: pom.xml (add these dependencies), database.sql (run this in MySQL first), Employee.java, EmployeeRowMapper.java, EmployeeDao.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- Spring JDBC -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-jdbc</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+    <!-- MySQL Driver -->
+    <dependency>
+        <groupId>com.mysql</groupId>
+        <artifactId>mysql-connector-j</artifactId>
+        <version>8.0.33</version>
+    </dependency>
+</dependencies>
+
+====================  database.sql (run this in MySQL first)  ====================
+CREATE DATABASE IF NOT EXISTS springdb;
+USE springdb;
+CREATE TABLE employee (
+    id INT PRIMARY KEY,
+    name VARCHAR(50),
+    salary DOUBLE
+);
+
+====================  Employee.java  ====================
+package com.example;
+
+public class Employee {
+    private int id;
+    private String name;
+    private double salary;
+
+    public Employee() { }
+
+    public Employee(int id, String name, double salary) {
+        this.id = id;
+        this.name = name;
+        this.salary = salary;
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public double getSalary() { return salary; }
+    public void setSalary(double salary) { this.salary = salary; }
+
+    public String toString() {
+        return "Employee [id=" + id + ", name=" + name + ", salary=" + salary + "]";
+    }
+}
+
+====================  EmployeeRowMapper.java  ====================
+package com.example;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.springframework.jdbc.core.RowMapper;
+
+public class EmployeeRowMapper implements RowMapper<Employee> {
+    public Employee mapRow(ResultSet rs, int rowNum) throws SQLException {
+        Employee e = new Employee();
+        e.setId(rs.getInt("id"));
+        e.setName(rs.getString("name"));
+        e.setSalary(rs.getDouble("salary"));
+        return e;
+    }
+}
+
+====================  EmployeeDao.java  ====================
+package com.example;
+
+import java.util.List;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+public class EmployeeDao {
+    private JdbcTemplate jdbcTemplate;
+
+    public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    // INSERT
+    public int insert(Employee e) {
+        String sql = "INSERT INTO employee VALUES (?, ?, ?)";
+        return jdbcTemplate.update(sql, e.getId(), e.getName(), e.getSalary());
+    }
+
+    // UPDATE
+    public int update(Employee e) {
+        String sql = "UPDATE employee SET name = ?, salary = ? WHERE id = ?";
+        return jdbcTemplate.update(sql, e.getName(), e.getSalary(), e.getId());
+    }
+
+    // DELETE
+    public int delete(int id) {
+        String sql = "DELETE FROM employee WHERE id = ?";
+        return jdbcTemplate.update(sql, id);
+    }
+
+    // DISPLAY ALL
+    public List<Employee> displayAll() {
+        String sql = "SELECT * FROM employee";
+        return jdbcTemplate.query(sql, new EmployeeRowMapper());
+    }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- DataSource -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/springdb"/>
+        <property name="username" value="root"/>
+        <property name="password" value="root"/>
+    </bean>
+
+    <!-- JdbcTemplate -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- DAO -->
+    <bean id="empDao" class="com.example.EmployeeDao">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        EmployeeDao dao = ctx.getBean("empDao", EmployeeDao.class);
+
+        dao.insert(new Employee(1, "Prajs", 50000));
+        dao.insert(new Employee(2, "Amit", 40000));
+        System.out.println("Records inserted.");
+
+        dao.update(new Employee(2, "Amit Sharma", 45000));
+        System.out.println("Record updated.");
+
+        System.out.println("--- All Employees ---");
+        for (Employee e : dao.displayAll()) {
+            System.out.println(e);
+        }
+
+        dao.delete(1);
+        System.out.println("Record deleted.");
+
+        System.out.println("--- After Delete ---");
+        for (Employee e : dao.displayAll()) {
+            System.out.println(e);
+        }
+    }
+}

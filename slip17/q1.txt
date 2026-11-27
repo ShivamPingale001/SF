@@ -1,0 +1,62 @@
+SLIP 17 - Q.1
+Question: Write a Spring program to demonstrate singleton and prototype bean scopes.
+
+Files needed: pom.xml (add these dependencies), Message.java, beans.xml, MainApp.java
+
+====================  pom.xml (add these dependencies)  ====================
+<dependencies>
+    <!-- Spring Core + Context -->
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.3.39</version>
+    </dependency>
+</dependencies>
+
+====================  Message.java  ====================
+package com.example;
+
+public class Message {
+    private String text;
+
+    public void setText(String text) { this.text = text; }
+    public String getText() { return text; }
+}
+
+====================  beans.xml  ====================
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- Singleton : only ONE object for the whole application -->
+    <bean id="singletonBean" class="com.example.Message" scope="singleton">
+        <property name="text" value="Hello"/>
+    </bean>
+
+    <!-- Prototype : NEW object on every getBean() call -->
+    <bean id="prototypeBean" class="com.example.Message" scope="prototype">
+        <property name="text" value="Hello"/>
+    </bean>
+</beans>
+
+====================  MainApp.java  ====================
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+public class MainApp {
+    public static void main(String[] args) {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("beans.xml");
+        // Singleton - both references point to the SAME object
+        Message s1 = ctx.getBean("singletonBean", Message.class);
+        Message s2 = ctx.getBean("singletonBean", Message.class);
+        System.out.println("Singleton same object? " + (s1 == s2));
+
+        // Prototype - each call gives a NEW object
+        Message p1 = ctx.getBean("prototypeBean", Message.class);
+        Message p2 = ctx.getBean("prototypeBean", Message.class);
+        System.out.println("Prototype same object? " + (p1 == p2));
+    }
+}
